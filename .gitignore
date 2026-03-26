@@ -47,3 +47,5 @@ out/
 .claude/
 .agents/
 skills-lock.json
+docs/
+compose.yaml

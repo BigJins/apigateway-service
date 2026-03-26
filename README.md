@@ -10,8 +10,6 @@ Spring Cloud Gateway 기반으로 Rate Limiting, 라우팅을 담당합니다.
 | **order-service** | 주문 생성 / 상태 관리 | [BigJins/order-service](https://github.com/BigJins/order-service) |
 | **pay-service** | 결제 승인 / Toss Payments 연동 | [BigJins/pay-service](https://github.com/BigJins/pay-service) |
 | **apigateway-service** | Rate Limiting / 라우팅 | 현재 레포 |
-| **config-server** | 런타임 설정 중앙 관리 | [BigJins/config-server](https://github.com/BigJins/config-server) |
-| **allmart-configs** | Config Server 설정 파일 저장소 | [BigJins/allmart-configs](https://github.com/BigJins/allmart-configs) |
 
 ## 기술 스택
 

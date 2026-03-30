@@ -1,0 +1,67 @@
+name: CD
+
+on:
+  push:
+    branches: [ master ]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  AWS_REGION: ap-northeast-2
+  ECR_REGISTRY: 646596232446.dkr.ecr.ap-northeast-2.amazonaws.com
+  ECR_REPOSITORY: apigateway-service
+  ECS_CLUSTER: allmart-cluster
+  ECS_SERVICE: apigateway-service
+
+jobs:
+  deploy:
+    name: Deploy to ECS
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Java 21 설정
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Gradle 캐시
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('**/*.gradle.kts', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-
+
+      - name: gradlew 실행 권한 부여
+        run: chmod +x gradlew
+
+      - name: JAR 빌드 (테스트 제외)
+        run: ./gradlew bootJar -x test
+
+      - name: AWS 자격증명 설정
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: ECR 로그인
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Docker 이미지 빌드 & ECR 푸시
+        run: |
+          docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
+          docker tag ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}                      ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+
+      - name: ECS 서비스 배포
+        run: |
+          aws ecs update-service             --cluster ${{ env.ECS_CLUSTER }}             --service ${{ env.ECS_SERVICE }}             --force-new-deployment             --region ${{ env.AWS_REGION }}
+
+      - name: 배포 대기 (태스크 안정화 확인)
+        run: |
+          aws ecs wait services-stable             --cluster ${{ env.ECS_CLUSTER }}             --services ${{ env.ECS_SERVICE }}             --region ${{ env.AWS_REGION }}

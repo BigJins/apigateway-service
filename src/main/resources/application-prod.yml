@@ -1,5 +1,0 @@
-# 운영 프로파일 — JAR에 번들되는 최소 설정
-# JWKS URI 등 런타임 설정은 config-server의 apigateway-service.yml 에서 주입
-spring:
-  config:
-    import: "configserver:${CONFIG_SERVER_URI:http://config-server:8888}"

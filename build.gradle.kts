@@ -29,7 +29,11 @@ extra["springCloudVersion"] = "2025.1.0"
 dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
     implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
+    implementation("org.springframework.cloud:spring-cloud-starter-config")
+    implementation("org.springframework.cloud:spring-cloud-starter-bus-kafka")
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
+    // JWT 검증: auth-service JWKS 엔드포인트에서 공개키 취득 후 RS256 로컬 검증
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.projectlombok:lombok")

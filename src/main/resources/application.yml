@@ -1,48 +1,8 @@
-server:
-  port: 8000
-
 spring:
   application:
     name: apigateway-service
+  config:
+    import: "optional:configserver:http://localhost:8888"
 
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-
-  cloud:
-    gateway:
-      server:
-        webflux:
-          routes:
-            # 결제 확인 API — Rate Limiting 적용
-            # 이유: 동일 IP에서 반복 호출 시 Toss API 비용 발생 + brute force 위험
-            - id: payment-confirm
-              uri: lb://pay-service
-              predicates:
-                - Path=/api/payments/**
-              filters:
-                - name: RequestRateLimiter
-                  args:
-                    # 토큰 버킷 알고리즘
-                    # replenishRate: 초당 보충되는 토큰 수 (정상 처리량)
-                    # burstCapacity: 버킷 최대 용량 (순간 허용 최대치)
-                    # requestedTokens: 요청 1건당 소비 토큰
-                    redis-rate-limiter.replenishRate: 5
-                    redis-rate-limiter.burstCapacity: 10
-                    redis-rate-limiter.requestedTokens: 1
-                    # IP 기반으로 제한 (각 클라이언트 IP별로 독립적인 버킷)
-                    key-resolver: "#{@ipKeyResolver}"
-
-            # 주문 API — Rate Limiting 없음 (조회 포함, 상대적으로 안전)
-            - id: order-service
-              uri: lb://order-service
-              predicates:
-                - Path=/api/orders/**
-
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://127.0.0.1:8761/eureka
+server:
+  port: 8000

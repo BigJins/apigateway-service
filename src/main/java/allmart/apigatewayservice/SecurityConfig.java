@@ -58,6 +58,11 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.GET, "/api/orders/**").authenticated()
                         // 결제 — 소비자(CUSTOMER)만
                         .pathMatchers("/api/payments/**").hasRole("CUSTOMER")
+                        // 재고 입고(PATCH) — 판매자(MEMBER)만, 조회(GET)는 인증된 사용자
+                        .pathMatchers(HttpMethod.PATCH, "/api/inventory/**").hasRole("MEMBER")
+                        .pathMatchers(HttpMethod.GET, "/api/inventory/**").hasRole("MEMBER")
+                        // 배송 관리 — 판매자(MEMBER)만
+                        .pathMatchers("/api/deliveries/**").hasRole("MEMBER")
                         .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(rs -> rs.jwt(jwt ->

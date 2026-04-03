@@ -56,3 +56,16 @@ jobs:
                      ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+
+      - name: EC2 배포 (Core EC2 — apigateway-service)
+        uses: appleboy/ssh-action@v1
+        with:
+          host: 43.202.61.131
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            aws ecr get-login-password --region ap-northeast-2 \
+              | docker login --username AWS --password-stdin 646596232446.dkr.ecr.ap-northeast-2.amazonaws.com
+            cd /opt/allmart/core
+            docker-compose pull apigateway-service
+            docker-compose up -d --no-deps apigateway-service

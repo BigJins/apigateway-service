@@ -1,5 +1,6 @@
 package allmart.apigatewayservice;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -19,6 +20,7 @@ import reactor.core.publisher.Mono;
  * X-User-Type:    MEMBER | CUSTOMER
  * X-User-Id:      customerId (Long) — CUSTOMER만 존재, order-service가 buyerId로 사용
  */
+@Slf4j
 @Component
 public class UserContextFilter implements GlobalFilter, Ordered {
 
@@ -29,6 +31,7 @@ public class UserContextFilter implements GlobalFilter, Ordered {
                     if (principal instanceof JwtAuthenticationToken jwtAuth) {
                         var jwt = jwtAuth.getToken();
                         String type = jwt.getClaimAsString("type");
+                        String path = exchange.getRequest().getPath().value();
                         var requestMutate = exchange.getRequest().mutate()
                                 .header("X-User-Subject", jwt.getSubject())
                                 .header("X-User-Type", type != null ? type : "");
@@ -37,6 +40,13 @@ public class UserContextFilter implements GlobalFilter, Ordered {
                         Number uid = jwt.getClaim("uid");
                         if (uid != null) {
                             requestMutate.header("X-User-Id", String.valueOf(uid.longValue()));
+                        }
+
+                        if (type == null) {
+                            log.warn("JWT type claim 없음: subject={}, path={}", jwt.getSubject(), path);
+                        } else {
+                            log.debug("JWT 컨텍스트 주입: subject={}, type={}, uid={}, path={}",
+                                    jwt.getSubject(), type, uid, path);
                         }
 
                         ServerHttpRequest mutated = requestMutate.build();

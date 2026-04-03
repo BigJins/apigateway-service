@@ -34,6 +34,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
     // JWT 검증: auth-service JWKS 엔드포인트에서 공개키 취득 후 RS256 로컬 검증
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+    implementation("com.github.loki4j:loki-logback-appender:1.5.2")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.projectlombok:lombok")

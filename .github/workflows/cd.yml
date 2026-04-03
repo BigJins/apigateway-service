@@ -9,12 +9,10 @@ env:
   AWS_REGION: ap-northeast-2
   ECR_REGISTRY: 646596232446.dkr.ecr.ap-northeast-2.amazonaws.com
   ECR_REPOSITORY: apigateway-service
-  ECS_CLUSTER: allmart-cluster
-  ECS_SERVICE: apigateway-service
 
 jobs:
   deploy:
-    name: Deploy to ECS
+    name: Build & Push to ECR
     runs-on: ubuntu-latest
 
     steps:
@@ -54,14 +52,7 @@ jobs:
       - name: Docker 이미지 빌드 & ECR 푸시
         run: |
           docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
-          docker tag ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}                      ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+          docker tag ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
+                     ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
-
-      - name: ECS 서비스 배포
-        run: |
-          aws ecs update-service             --cluster ${{ env.ECS_CLUSTER }}             --service ${{ env.ECS_SERVICE }}             --force-new-deployment             --region ${{ env.AWS_REGION }}
-
-      - name: 배포 대기 (태스크 안정화 확인)
-        run: |
-          aws ecs wait services-stable             --cluster ${{ env.ECS_CLUSTER }}             --services ${{ env.ECS_SERVICE }}             --region ${{ env.AWS_REGION }}

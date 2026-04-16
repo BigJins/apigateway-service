@@ -25,8 +25,10 @@ spec:
               value: "prod"
             - name: CONFIG_SERVER_URI
               value: "http://config-server:8888"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "10.0.1.146:19092,10.0.1.146:19093,10.0.1.146:19094"
             - name: REDIS_SENTINEL_NODES
-              value: "43.203.213.93:26379,43.203.213.93:26380,43.203.213.93:26381"
+              value: "10.0.1.146:26379,10.0.1.146:26380,10.0.1.146:26381"
             - name: REDIS_MASTER_NAME
               value: "mymaster"
             - name: TEMPO_ENDPOINT
@@ -35,22 +37,22 @@ spec:
               value: "http://43.200.2.221:3100/loki/api/v1/push"
           resources:
             requests:
-              memory: "256Mi"
+              memory: "384Mi"
               cpu: "200m"
             limits:
-              memory: "512Mi"
+              memory: "768Mi"
               cpu: "500m"
           livenessProbe:
             httpGet:
               path: /actuator/health
               port: 8000
-            initialDelaySeconds: 60
+            initialDelaySeconds: 200
             periodSeconds: 15
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: 8000
-            initialDelaySeconds: 60
+            initialDelaySeconds: 200
             periodSeconds: 10
 ---
 apiVersion: v1

@@ -12,7 +12,7 @@ env:
 
 jobs:
   deploy:
-    name: Build & Push to ECR
+    name: Build & Deploy to k3s
     runs-on: ubuntu-latest
 
     steps:
@@ -57,15 +57,15 @@ jobs:
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
 
-      - name: EC2 배포 (Core EC2 — apigateway-service)
+      - name: k3s 배포 (kubectl set image)
         uses: appleboy/ssh-action@v1
         with:
-          host: 43.202.61.131
-          username: ec2-user
+          host: 3.36.78.100
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            aws ecr get-login-password --region ap-northeast-2 \
-              | docker login --username AWS --password-stdin 646596232446.dkr.ecr.ap-northeast-2.amazonaws.com
-            cd /opt/allmart/core
-            docker-compose pull apigateway-service
-            docker-compose up -d --no-deps apigateway-service
+            sudo kubectl apply -f /home/ubuntu/k8s/apigateway-service.yaml
+            sudo kubectl set image deployment/apigateway-service \
+              apigateway-service=646596232446.dkr.ecr.ap-northeast-2.amazonaws.com/apigateway-service:${{ github.sha }} \
+              -n allmart
+            sudo kubectl rollout status deployment/apigateway-service -n allmart --timeout=120s

@@ -1,7 +1,18 @@
 # apigateway-service
 
 **allmart** 이커머스 플랫폼의 API Gateway 서비스입니다.
-Spring Cloud Gateway 기반으로 Rate Limiting, 라우팅을 담당합니다.
+Spring Cloud Gateway 기반으로 **RS256 JWT 로컬 검증**, Rate Limiting, 라우팅을 담당합니다.
+
+## JWT 로컬 검증 (JWKS)
+
+```
+auth-service의 JWKS 공개키를 캐시 → 요청마다 Gateway에서 로컬 서명 검증
+(auth-service 왕복 없음 — 인증 서버가 검증 병목/단일 장애점이 되지 않음)
+```
+
+- type claim → `ROLE_MEMBER` / `ROLE_CUSTOMER` 매핑, 경로별 인가
+- uid claim → `X-User-Id` 헤더 주입 — downstream은 헤더만 신뢰, 클라이언트 위조 불가
+- `/internal/**` 외부 직접 호출 차단 (denyAll)
 
 ## 관련 서비스
 

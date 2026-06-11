@@ -60,7 +60,7 @@ jobs:
       - name: k3s 배포 (kubectl set image)
         uses: appleboy/ssh-action@v1
         with:
-          host: 3.36.78.100
+          host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
